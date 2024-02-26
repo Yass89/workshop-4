@@ -12,7 +12,6 @@ export async function user(userId: number) {
   _user.use(express.json());
   _user.use(bodyParser.json());
 
-  // TODO implement the status route
    _user.get("/status", (req, res) => {
     res.status(200).send("live");
    });

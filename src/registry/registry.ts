@@ -18,7 +18,6 @@ export async function launchRegistry() {
   _registry.use(express.json());
   _registry.use(bodyParser.json());
 
-  // TODO implement the status route
   _registry.get("/status", (req, res) => {
     res.status(200).send("live");
   });
