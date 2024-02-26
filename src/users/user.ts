@@ -16,6 +16,16 @@ export async function user(userId: number) {
     res.status(200).send("live");
    });
 
+   _user.get("/getLastReceivedMessage", (req, res) => {
+    /* This route should respond with a JSON payload containing a result property containing the last received message of the user*/
+    res.status(200).json({ result: null});
+  });
+
+  _user.get("/getLastSentMessage", (req, res) => {
+    /* This route should respond with a JSON payload containing a result property containing last sent message of the user.*/
+    res.status(200).json({ result: null});
+  });
+
   const server = _user.listen(BASE_USER_PORT + userId, () => {
     console.log(
       `User ${userId} is listening on port ${BASE_USER_PORT + userId}`
