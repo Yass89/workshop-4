@@ -141,7 +141,7 @@ export async function createRandomSymmetricKey(): Promise<webcrypto.CryptoKey> {
   //      keys are extractable.
   return webcrypto.subtle.generateKey(
     {
-      name: "AES-GCM",
+      name: "AES-CBC",
       length: 256,
     },
     true,
@@ -166,7 +166,7 @@ export async function importSymKey(
     "raw",
     keyBuffer,
     {
-      name: "AES-GCM",
+      name: "AES-CBC",
     },
     true,
     ["encrypt", "decrypt"]
@@ -181,15 +181,22 @@ export async function symEncrypt(
   // TODO implement this function to encrypt a base64 encoded message with a public key
   // tip: encode the data to a uin8array with TextEncoder
   const encoded = new TextEncoder().encode(data);
+  // Generate a 16-byte IV for AES-CBC
+  const iv = crypto.getRandomValues(new Uint8Array(16));
   const encrypted = await webcrypto.subtle.encrypt(
     {
-      name: "AES-GCM",
-      iv: crypto.getRandomValues(new Uint8Array(12)),
+      name: "AES-CBC",
+      iv,
     },
     key,
     encoded
   );
-  return arrayBufferToBase64(encrypted);
+  // Prepend IV to the encrypted data
+  const ivAndEncrypted = new Uint8Array(iv.length + encrypted.byteLength);
+  ivAndEncrypted.set(iv);
+  ivAndEncrypted.set(new Uint8Array(encrypted), iv.length);
+  
+  return arrayBufferToBase64(ivAndEncrypted.buffer);
 }
 
 // Decrypt a message using a symmetric key
@@ -199,12 +206,16 @@ export async function symDecrypt(
 ): Promise<string> {
   // TODO implement this function to decrypt a base64 encoded message with a private key
   // tip: use the provided base64ToArrayBuffer function and use TextDecode to go back to a string format
-  const key = await importSymKey(strKey);
-  const encrypted = base64ToArrayBuffer(encryptedData);
+  const key = await importSymKey(strKey); // Ensure this function correctly imports the key
+  const ivAndEncrypted = base64ToArrayBuffer(encryptedData);
+  // Extract the IV and encrypted data
+  const iv = ivAndEncrypted.slice(0, 16);
+  const encrypted = ivAndEncrypted.slice(16);
+  
   const decrypted = await webcrypto.subtle.decrypt(
     {
-      name: "AES-GCM",
-      iv: crypto.getRandomValues(new Uint8Array(12)),
+      name: "AES-CBC",
+      iv: new Uint8Array(iv),
     },
     key,
     encrypted
