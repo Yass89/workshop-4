@@ -32,12 +32,6 @@ export async function simpleOnionRouter(nodeId: number) {
     res.json({ result: null});
   });
 
-  onionRouter.post("/registerNode", (req, res) => {
-    /* This route allows a node to register itself on the registry. */
-    const body = req.body as RegisterNodeBody;
-    console.log(`Node ${body.nodeId} registered`);
-    res.status(200).send("ok");
-  });
 
   const server = onionRouter.listen(BASE_ONION_ROUTER_PORT + nodeId, () => {
     console.log(
